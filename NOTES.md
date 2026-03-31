@@ -58,3 +58,27 @@ São duas classes separadas conectadas por um adapter.
 **Na prática (O caso da `Transaction`):**
 1. **Estado inicial blindado:** O construtor define rigidamente `status = PENDING`. Nenhuma transação pode ser criada já aprovada ou falha.
 2. **Transições seguras:** Métodos de ação (`approve()`, `refund()`) verificam o estado atual antes de aplicar o novo. Isso impossibilita anomalias técnicas, como tentar estornar uma transação que nem foi aprovada.
+
+## 30/03/2026 — O Coração do Hexágono: Ports & Adapters
+
+**Foco:** Isolamento da lógica de negócio e Inversão de Dependência.
+
+Nesta etapa, saímos do `domain` e entramos na camada de `application`. O objetivo aqui é definir como o mundo se comunica com o nosso sistema sem "sujar" o código com detalhes de banco de dados ou frameworks.
+
+### 1. O que são Ports?
+As "Ports" (Portas) são interfaces que servem como a fronteira do nosso sistema. Elas definem o contrato de comunicação.
+- **Portas de Entrada (Inbound):** Definem o que o sistema **pode fazer**. O Controller (Web) chama essa porta.
+- **Portas de Saída (Outbound):** Definem o que o sistema **precisa para funcionar**. O sistema chama essa porta para buscar ou salvar dados.
+
+### 2. Inversão de Dependência (O "D" do SOLID) na prática
+Em vez de o nosso serviço depender do `JpaRepository` (que é um detalhe do Spring/PostgreSQL), ele depende da nossa interface `WalletRepositoryPort`.
+- **Por que isso é incrível?** Porque o Core da aplicação (o Hexágono) não conhece o banco de dados. Se amanhã trocarmos o PostgreSQL pelo MongoDB, o `domain` e o `application` permanecem intactos. Só precisamos criar um novo "Adapter" que implemente a porta.
+
+### 3. O uso de Commands e Records
+Para passar dados para o Caso de Uso, usamos o `ProcessPaymentCommand` (Java Record).
+- **Imutabilidade:** Como é um Record, os dados que entram no sistema não podem ser alterados acidentalmente.
+- **Flexibilidade:** Se o pagamento precisar de novos dados (como uma descrição ou data agendada), alteramos o Command sem quebrar a assinatura dos métodos existentes em toda a aplicação.
+
+### 4. Fluxo de Dependência
+O fluxo sempre deve ser de **FORA para DENTRO**:
+`Web (Controller) -> Input Port -> Use Case (Service) -> Output Port -> Database (Adapter)`
