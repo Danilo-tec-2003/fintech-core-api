@@ -47,3 +47,14 @@ não muda uma linha. Só reescreve os adapters.
 **Para fixar:** Transaction.java = Java puro.
 TransactionJpaEntity.java = @Entity na infrastructure.
 São duas classes separadas conectadas por um adapter.
+
+
+## 30/03/2026 — Máquina de Estados no Domínio
+
+**Foco:** Controle seguro do ciclo de vida da entidade.
+
+**Conceito principal:** Quando uma entidade passa por diferentes fases (ex: `PENDING` -> `APPROVED`), as regras de transição (State Machine) devem pertencer à própria entidade, e não a um serviço externo.
+
+**Na prática (O caso da `Transaction`):**
+1. **Estado inicial blindado:** O construtor define rigidamente `status = PENDING`. Nenhuma transação pode ser criada já aprovada ou falha.
+2. **Transições seguras:** Métodos de ação (`approve()`, `refund()`) verificam o estado atual antes de aplicar o novo. Isso impossibilita anomalias técnicas, como tentar estornar uma transação que nem foi aprovada.
