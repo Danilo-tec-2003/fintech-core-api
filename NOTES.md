@@ -82,3 +82,14 @@ Para passar dados para o Caso de Uso, usamos o `ProcessPaymentCommand` (Java Rec
 ### 4. Fluxo de Dependência
 O fluxo sempre deve ser de **FORA para DENTRO**:
 `Web (Controller) -> Input Port -> Use Case (Service) -> Output Port -> Database (Adapter)`
+
+## 01/04/2026 — O Maestro (Application Service)
+
+**Foco:** Orquestração de Casos de Uso sem vazamento de regras de negócio.
+
+- **Responsabilidade do Service:** O Caso de Uso (`PaymentService`) funciona como um maestro. Ele não conhece a matemática do negócio, apenas o fluxo da operação:
+    1. Recuperar estado (via Portas de Saída).
+    2. Modificar o estado (chamando métodos das Entidades do Domínio).
+    3. Persistir o estado (via Portas de Saída).
+- **Consistência e Transação:** O uso da anotação `@Transactional` na borda do Caso de Uso garante que a operação seja atômica. Se a entidade lançar uma exceção de negócio ou o banco falhar, nada é salvo e a integridade da base de dados é mantida.
+- **Injeção de Dependências:** Sempre via construtor para as `Ports`. Facilita testes unitários utilizando mocks (ex: Mockito) sem depender do Spring Container.

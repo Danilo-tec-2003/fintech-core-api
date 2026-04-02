@@ -15,7 +15,7 @@ public class Transaction {
     private TransactionStatus status;
     private final LocalDateTime createdAt;
 
-    public Transaction (UUID id, UUID targetWalletId, BigDecimal amount) {
+    public Transaction (UUID id, UUID targetWalletId, UUID walletId, BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new InvalidTransactionException("O valor da transação deve ser maior que zero.");
         }
